@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CTM Pro v7 - Task Manager UI + ML</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/taskmgr.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="tm-header">
+    <div class="tm-title">Task Manager</div>
+    <div class="tm-actions">
+      <button id="endBtn" style="display:none">End task</button>
+    </div>
+  </div>
+  <div class="tm-body">
+    <nav class="tm-left">
+      <ul>
+        <li class="active" data-tab="processes">Processes</li>
+        <li data-tab="performance">Performance</li>
+        <li data-tab="models">Models</li>
+        <li data-tab="logs">Logs</li>
+      </ul>
+    </nav>
+    <main class="tm-main">
+      <section id="tab-processes" class="tab">
+        <div class="proc-top">
+          <input id="search" placeholder="Search processes...">
+          <select id="sortSel"><option value="cpu">CPU</option><option value="memory">Memory</option></select>
+        </div>
+        <div class="proc-table-wrap">
+          <table id="procTable">
+            <thead><tr><th>Image</th><th>Name</th><th>PID</th><th>Status</th><th>CPU</th><th>Memory</th><th>Threads</th><th>Anomaly</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+      <section id="tab-performance" class="tab" style="display:none">
+        <div class="charts-grid">
+          <div class="chart-card"><div class="card-title">CPU</div><canvas id="cpuChart"></canvas></div>
+          <div class="chart-card"><div class="card-title">Memory</div><canvas id="memChart"></canvas></div>
+          <div class="chart-card"><div class="card-title">Network</div><canvas id="netChart"></canvas></div>
+          <div class="chart-card"><div class="card-title">Disk</div><canvas id="diskChart"></canvas></div>
+        </div>
+      </section>
+      <section id="tab-models" class="tab" style="display:none">
+        <h3>Models</h3>
+        <div id="modelsInfo">Models can be trained using server-side script. UI hides training controls.</div>
+      </section>
+      <section id="tab-logs" class="tab" style="display:none">
+        <h3>Logs</h3>
+        <p>Download behavioral logs from the server or view recent actions.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal for process details -->
+  <div id="procModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">Process Details <span id="modalClose" style="cursor:pointer">✕</span></div>
+      <div class="modal-body">
+        <div class="modal-left">
+          <h2 id="m_name">name</h2>
+          <div><strong>PID:</strong> <span id="m_pid"></span></div>
+          <div><strong>User:</strong> <span id="m_user"></span></div>
+          <div><strong>Category:</strong> <span id="m_cat"></span></div>
+          <div><strong>Anomaly:</strong> <span id="m_anom"></span></div>
+          <div><strong>Predicted lifetime:</strong> <span id="m_life"></span></div>
+        </div>
+        <div class="modal-right">
+          <div class="card-title">CPU trend</div>
+          <canvas id="procSpark" style="width:100%;height:120px"></canvas>
+        </div>
+      </div>
+      <div class="modal-footer"><button id="modalKill">End Task</button><button id="modalClose2">Close</button></div>
+    </div>
+  </div>
+
+<script>
+const tabs = document.querySelectorAll('.tm-left li');
+const tabSections = document.querySelectorAll('.tab');
+for(const t of tabs){ t.addEventListener('click', ()=>{ document.querySelector('.tm-left li.active').classList.remove('active'); t.classList.add('active'); const tab=t.dataset.tab; tabSections.forEach(s=>s.style.display='none'); document.getElementById('tab-'+tab).style.display='block'; }); }
+
+async function fetchProcesses(){
+  try{ const res = await fetch('/api/processes'); if(!res.ok) return []; const procs = await res.json(); return procs; }catch(e){console.error(e); return []}
+}
+
+function anomalyClass(score){ if(score>85) return 'anomaly-high'; if(score>65) return 'anomaly-med'; return ''; }
+
+function renderTable(procs){
+  const tbody = document.querySelector('#procTable tbody'); tbody.innerHTML='';
+  const q = document.getElementById('search').value.toLowerCase();
+  for(const p of procs){
+    const text = (p.name+' '+p.pid+' '+(p.user||'')).toLowerCase(); if(q && !text.includes(q)) continue;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class='imgcell'>🔧</td><td class='namecol link' data-pid='${p.pid}'>${p.name||''}</td><td>${p.pid}</td><td>Running</td><td>${p.cpu}</td><td>${p.memory}%</td><td>${p.threads||0}</td><td><span class='anomaly-pill'>${p.anomaly}</span></td><td><button class='endbtn' data-pid='${p.pid}'>End</button></td>`;
+    tbody.appendChild(tr);
+  }
+  document.querySelectorAll('.endbtn').forEach(b=>b.addEventListener('click', ()=>{ endTask(b.dataset.pid); }));
+  document.querySelectorAll('.namecol.link').forEach(el=>el.addEventListener('click', ()=>{ openDetail(el.dataset.pid); }));
+}
+
+async function loadProcesses(){ const procs = await fetchProcesses(); renderTable(procs); }
+setInterval(()=>{ if(document.querySelector('#tab-processes').style.display!='none') loadProcesses(); }, 2000);
+document.getElementById('search').addEventListener('input', loadProcesses);
+
+async function endTask(pid){ if(!confirm('End task '+pid+'?')) return; try{ const res = await fetch('/api/kill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pid})}); const data = await res.json(); alert(data.msg || JSON.stringify(data)); loadProcesses(); }catch(e){console.error(e)} }
+
+// process detail modal
+const modal = document.getElementById('procModal'); const modalClose = document.getElementById('modalClose'); const modalClose2 = document.getElementById('modalClose2');
+modalClose.addEventListener('click', ()=>modal.style.display='none'); modalClose2.addEventListener('click', ()=>modal.style.display='none');
+let sparkChart = null;
+async function openDetail(pid){ try{ const res = await fetch('/api/process/'+pid); if(!res.ok){ alert('No such process'); return; } const d = await res.json(); document.getElementById('m_name').innerText = d.name; document.getElementById('m_pid').innerText = d.pid; document.getElementById('m_user').innerText = d.user||''; document.getElementById('m_cat').innerText = d.category||''; document.getElementById('m_anom').innerText = d.anomaly; document.getElementById('m_life').innerText = formatSeconds(d.lifetime_pred || 0);
+  // draw sparkline
+  const ctx = document.getElementById('procSpark').getContext('2d');
+  const data = d.history || [];
+  if(sparkChart) sparkChart.destroy();
+  sparkChart = new Chart(ctx, {type:'line', data:{labels:data.map((_,i)=>i), datasets:[{data:data, fill:true, borderWidth:2, pointRadius:0}]}, options:{animation:false, scales:{x:{display:false}, y:{beginAtZero:true}}}});
+  document.getElementById('modalKill').onclick = ()=>endTask(pid);
+  modal.style.display='block';
+ }catch(e){console.error(e)} }
+
+function formatSeconds(s){ if(!s) return 'N/A'; s = parseInt(s); if(s<60) return s+'s'; const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); return (h? h+'h ':'') + (m? m+'m':''); }
+
+// Charts for performance tab
+const cpuCtx = document.getElementById('cpuChart').getContext('2d'); const memCtx = document.getElementById('memChart').getContext('2d'); const netCtx = document.getElementById('netChart').getContext('2d'); const diskCtx = document.getElementById('diskChart').getContext('2d');
+function createLine(ctx, label, max=100){ return new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:label,data:[],fill:true,pointRadius:0,borderWidth:2}]},options:{animation:false,scales:{x:{display:false},y:{beginAtZero:true,max:max}}}}); }
+const cpuChart=createLine(cpuCtx,'CPU %',100); const memChart=createLine(memCtx,'Memory %',100); const netChart=createLine(netCtx,'Network bytes',null); const diskChart=createLine(diskCtx,'Disk %',100);
+async function pollOverview(){ try{ const res = await fetch('/api/overview'); if(!res.ok) return; const d = await res.json(); const ts = new Date().toLocaleTimeString(); function push(chart, val, max){ chart.data.labels.push(ts); chart.data.datasets[0].data.push(val); if(chart.data.labels.length>30){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); } if(max) chart.options.scales.y.max = max; chart.update(); }
+  push(cpuChart, d.cpu, 100); push(memChart, d.mem, 100); push(netChart, d.net_recv, null); push(diskChart, d.disk, 100);
+ }catch(e){console.error(e)} }
+setInterval(()=>{ if(document.querySelector('#tab-performance').style.display!='none') pollOverview(); }, 2000);
+
+// init
+loadProcesses(); pollOverview();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+/* Windows Task Manager-ish dark theme */
+body{margin:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:#111214;color:#e6eef6}
+.tm-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(180deg,#0f1418,#0a0d10);border-bottom:1px solid #1f2933}
+.tm-title{font-weight:700;font-size:18px;color:#8ad4ff}
+.tm-actions button{margin-left:8px;padding:6px 10px;border-radius:6px;border:none;background:#0b7bdc;color:white;cursor:pointer}
+.tm-body{display:flex;height:calc(100vh - 56px)}
+.tm-left{width:180px;border-right:1px solid #162028;background:linear-gradient(180deg,#0b0f12,#071013);padding-top:12px}
+.tm-left ul{list-style:none;padding:0;margin:0}
+.tm-left li{padding:12px 16px;color:#bcdff6;cursor:pointer}
+.tm-left li.active{background:#0b2537;color:#fff;border-left:4px solid #0b7bdc}
+.tm-main{flex:1;padding:16px;overflow:auto}
+.proc-top{display:flex;justify-content:space-between;margin-bottom:8px}
+.proc-top input{width:60%;padding:8px;border-radius:6px;border:1px solid #223; background:#071018; color:#dff;}
+.proc-top select{padding:8px;border-radius:6px;background:#071018;color:#dff;border:1px solid #223}
+.proc-table-wrap{background:#071018;border-radius:8px;padding:8px;border:1px solid #122;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+table{width:100%;border-collapse:collapse;color:#dff}
+thead th{font-size:13px;padding:8px;text-align:left;color:#8ad4ff;border-bottom:1px solid #122}
+tbody td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.02)}
+tr:hover{background:rgba(11,123,220,0.04)}
+.imgcell{width:36px;text-align:center}
+.namecol{font-weight:600;color:#fff;cursor:pointer}
+.anomaly-pill{background:linear-gradient(90deg,#ffd166,#ff6b6b);padding:4px 8px;border-radius:12px;color:#100;font-weight:700}
+.chart-card{background:#071018;padding:12px;border-radius:8px;border:1px solid #122}
+.charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card-title{color:#9ddcff;font-weight:700;margin-bottom:6px}
+
+/* Modal styles */
+.modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+.modal-content{background:linear-gradient(180deg,#081018,#0f1620);border-radius:10px;padding:16px;color:#dff;width:800px;max-width:95%;box-shadow:0 10px 40px rgba(0,0,0,0.8)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#8ad4ff;margin-bottom:8px}
+.modal-body{display:flex;gap:20px}
+.modal-left{flex:1}
+.modal-right{width:320px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.modal-footer button{padding:8px 12px;border-radius:6px;border:none;background:#0b7bdc;color:white;cursor:pointer}
