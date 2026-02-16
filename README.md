@@ -6,7 +6,6 @@
 
 [![GitHub](https://img.shields.io/badge/💻_View-Repository-181717?style=for-the-badge&logo=github)](https://github.com/devanshrawat27/Smart-Task-Manager)
 [![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
@@ -272,17 +271,6 @@ models = {
 }
 ```
 
-### 📈 Performance Metrics
-
-The system evaluates models using:
-- Accuracy Score
-- Precision & Recall
-- F1-Score
-- ROC-AUC Curve
-- Confusion Matrix
-
----
-
 ## 🔧 Configuration
 
 ### ⚙️ Application Settings
@@ -307,18 +295,6 @@ MAX_LOG_SIZE = 10000       # Maximum CSV entries before rotation
 MODEL_PATH = "models/trained_model.pkl"
 RETRAIN_INTERVAL = 7       # Days before model retraining
 ```
-
-### 🛡️ Security Recommendations
-
-⚠️ **Important Security Notes:**
-
-1. **Auto-Kill is OFF by default** - Always review flagged processes manually
-2. **Run with appropriate permissions** - Admin/sudo may be required
-3. **Test in safe environment** - Validate on non-production systems first
-4. **Backup critical data** - Before enabling auto-kill features
-5. **Regular model updates** - Retrain models with new threat data
-
----
 
 ## 📡 API Documentation
 
@@ -422,23 +398,6 @@ python -m app.main --debug
 pytest tests/
 ```
 
----
-
-## 🎯 Roadmap
-
-- [ ] 🐳 Docker containerization
-- [ ] 🌐 Multi-system monitoring support
-- [ ] 📧 Email alerts for critical threats
-- [ ] 🔄 Automatic model retraining pipeline
-- [ ] 📱 Mobile app companion
-- [ ] 🌍 Multi-language support
-- [ ] 🔌 Plugin system for custom modules
-- [ ] 📊 Advanced ML models (Deep Learning)
-- [ ] ☁️ Cloud deployment options
-- [ ] 🔗 Integration with SIEM tools
-
----
-
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -492,12 +451,6 @@ Contributions are welcome! Here's how you can help:
 
 ---
 
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` file for more information.
-
----
-
 ## 🙏 Acknowledgments
 
 - **psutil** - Cross-platform process monitoring
@@ -521,17 +474,6 @@ Distributed under the MIT License. See `LICENSE` file for more information.
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](#)
 
 </div>
-
----
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-- 🐛 [Open an Issue](https://github.com/devanshrawat27/Smart-Task-Manager/issues)
-- 💬 [Discussions](https://github.com/devanshrawat27/Smart-Task-Manager/discussions)
-- 📧 Email: [Contact Developer]
-
 ---
 
 ## 📊 Project Stats
